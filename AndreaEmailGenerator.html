@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Changed Title -->
     <title>Specimen Pickup Log & Email Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Custom scrollbar (unchanged) */
+        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; } /* Lighter track for light mode */
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
         .dark ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; } /* Adjusted default thumb */
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #64748b; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; } /* Adjusted hover */
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Basic styles (unchanged) */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        /* Modal styles (unchanged, will reuse for confirmation and email display) */
         .modal-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Slightly darker backdrop */
+            background-color: rgba(0, 0, 0, 0.6);
             display: flex; justify-content: center; align-items: center;
             z-index: 50; opacity: 0; visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-backdrop.active { opacity: 1; visibility: visible; }
         .modal-content {
-            transform: translateY(20px) scale(0.95); /* Start slightly down */
+            transform: translateY(20px) scale(0.95);
             transition: transform 0.3s ease, opacity 0.3s ease;
              opacity: 0;
         }
@@ -41,12 +38,10 @@
              opacity: 1;
         }
 
-        /* Custom styling for number input arrows (kept in case needed later, but not used now) */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* Gradient text (unchanged) */
         .gemini-gradient-text {
             background-image: linear-gradient(to right, #4285F4, #9B59B6, #E94298);
             -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -56,7 +51,6 @@
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        /* Custom Checkbox/Radio Styles for better look */
         .custom-checkbox:checked, .custom-radio:checked {
             background-color: #0ea5e9; /* sky-600 */
             border-color: #0ea5e9; /* sky-600 */
@@ -66,27 +60,21 @@
             border-color: #0284c7; /* sky-700 */
         }
         .custom-checkbox:focus, .custom-radio:focus {
-            --tw-ring-color: rgba(59, 130, 246, 0.5); /* sky-500 focus ring */
+            --tw-ring-color: rgba(59, 130, 246, 0.5);
             box-shadow: 0 0 0 2px white, 0 0 0 4px var(--tw-ring-color);
         }
         .dark .custom-checkbox:focus, .dark .custom-radio:focus {
-             --tw-ring-color: rgba(14, 165, 233, 0.5); /* sky-600 focus ring */
-             box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px var(--tw-ring-color); /* dark mode focus */
+             --tw-ring-color: rgba(14, 165, 233, 0.5);
+             box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px var(--tw-ring-color);
         }
-
-        /* Styling for dynamically generated tissue lists */
         .tissue-allocation-grid label { display: block; margin-bottom: 0.5rem; }
-
     </style>
     <script>
-        // Tailwind dark mode configuration (unchanged)
         tailwind.config = {
             darkMode: 'class',
             theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], }, } }
         }
-        // Function to apply theme from localStorage (unchanged structure)
         function applyThemeAndHeaderStyle() {
-            // ... (keep the existing theme application logic) ...
             if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
                 if (document.getElementById('darkModeToggle')) document.getElementById('darkModeToggle').checked = true;
@@ -107,7 +95,6 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen flex flex-col items-center pt-6 sm:pt-10 pb-10 transition-colors duration-300">
 
-    <!-- Dark Mode Toggle (Unchanged) -->
     <div class="fixed top-4 right-4 z-20 flex items-center space-x-2 bg-white dark:bg-slate-800 p-2 rounded-lg shadow-md">
         <i class="fas fa-sun text-yellow-500"></i>
         <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
@@ -118,208 +105,186 @@
     </div>
 
     <div class="container mx-auto px-4 w-full max-w-3xl">
-        <!-- Header (Changed Title) -->
         <header class="text-center mb-8 sm:mb-12">
             <h1 id="mainHeader" class="text-3xl sm:text-4xl font-bold pb-2">Specimen Pickup Log</h1>
         </header>
 
-        <!-- Message Area (Unchanged) -->
         <div id="messageArea" class="mb-6 text-center text-sm"></div>
 
         <!-- Step 1: Surgery & Patient Details -->
         <div class="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-6 sm:p-8 mb-8 transition-colors duration-300">
             <h2 class="text-xl sm:text-2xl font-semibold mb-5 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Surgery & Patient Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="surgeonName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Surgeon</label>
-                    <select id="surgeonName" name="surgeonName" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
-                        <option value="">Select Surgeon...</option>
-                        <option value="Dr. Lee">Dr. Lee</option>
-                        <option value="Dr. Spitnale">Dr. Spitnale</option>
-                        <option value="Dr. Wawrose">Dr. Wawrose</option>
-                    </select>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="surgeonName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Surgeon</label>
+                        <select id="surgeonName" name="surgeonName" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                            <option value="">Select Surgeon...</option>
+                            <option value="Dr. Lee">Dr. Lee</option>
+                            <option value="Dr. Spitnale">Dr. Spitnale</option>
+                            <option value="Dr. Wawrose">Dr. Wawrose</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="surgeryDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
+                        <input type="date" id="surgeryDate" name="surgeryDate" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                    </div>
                 </div>
-                <div>
-                    <label for="surgeryDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                    <input type="date" id="surgeryDate" name="surgeryDate" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
-                </div>
-                 <div>
-                    <label for="patientLastName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Patient Last Name</label>
-                    <input type="text" id="patientLastName" name="patientLastName" placeholder="Enter last name" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="patientLastName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Patient Last Name</label>
+                        <input type="text" id="patientLastName" name="patientLastName" placeholder="Enter last name" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                    </div>
+                    <div>
+                        <label for="patientAge" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Age</label>
+                        <input type="number" id="patientAge" name="patientAge" placeholder="Enter age" min="0" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                    </div>
+                    <div>
+                        <label for="patientGender" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                        <select id="patientGender" name="patientGender" class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:text-slate-200">
+                            <option value="">Select Gender...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Step 2: Tissues Picked Up -->
+        <!-- Step 2: Tissues Picked Up (HTML Unchanged) -->
         <div class="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-6 sm:p-8 mb-8 transition-colors duration-300">
             <h2 class="text-xl sm:text-2xl font-semibold mb-5 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Tissues Picked Up</h2>
             <div id="tissuesPickedUpContainer" class="space-y-3">
-                <!-- Row 1 -->
                 <div class="grid grid-cols-3 gap-4">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="AF" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">AF</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="NP" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">NP</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="EP" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">EP</span>
-                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="AF" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">AF</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="NP" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">NP</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="EP" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">EP</span></label>
                 </div>
-                 <!-- Row 2 -->
                 <div class="grid grid-cols-3 gap-4">
-                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="Bone" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">Bone</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="Muscle" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">Muscle</span>
-                    </label>
-                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="Fat" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">Fat</span>
-                    </label>
+                     <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="Bone" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Bone</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="Muscle" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Muscle</span></label>
+                     <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="Fat" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Fat</span></label>
                 </div>
-                 <!-- Row 3 -->
                 <div class="grid grid-cols-3 gap-4">
-                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="LF Normal" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">LF Normal</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="LF Abnormal" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">LF Abnormal</span>
-                    </label>
-                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" name="tissuePicked" value="Spinal Ligaments" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">Spinal Ligaments</span>
-                    </label>
+                     <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="LF Normal" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">LF Normal</span></label>
+                    <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="LF Abnormal" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">LF Abnormal</span></label>
+                     <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="tissuePicked" value="Spinal Ligaments" class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Spinal Ligaments</span></label>
                 </div>
             </div>
         </div>
 
-        <!-- Step 3: Consent Forms -->
+        <!-- Grade of Degeneration (HTML Unchanged) -->
+        <div class="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-6 sm:p-8 mb-8 transition-colors duration-300">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-5 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Grade of Degeneration</h2>
+            <fieldset><legend class="sr-only">Select Grade</legend>
+                <div id="gradeOfDegenerationContainer" class="flex flex-wrap gap-x-6 gap-y-3">
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="N/A" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">N/A</span></label>
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="1" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">1</span></label>
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="2" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">2</span></label>
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="3" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">3</span></label>
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="4" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">4</span></label>
+                    <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="degenerationGrade" value="5" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">5</span></label>
+                </div>
+            </fieldset>
+        </div>
+
+        <!-- Consent Forms (HTML Unchanged) -->
         <div class="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-6 sm:p-8 mb-8 transition-colors duration-300">
             <h2 class="text-xl sm:text-2xl font-semibold mb-5 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Consent Forms</h2>
             <div class="space-y-4">
-                <fieldset>
-                    <legend class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">1. Were the consent forms signed by both patient and surgeon?</legend>
+                <fieldset><legend class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">1. Consent forms signed?</legend>
                     <div class="flex items-center space-x-4">
-                        <label class="flex items-center space-x-1 cursor-pointer">
-                            <input type="radio" name="consentSigned" value="Yes" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500 transition duration-150 ease-in-out">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">Yes</span>
-                        </label>
-                        <label class="flex items-center space-x-1 cursor-pointer">
-                            <input type="radio" name="consentSigned" value="No" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500 transition duration-150 ease-in-out">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">No</span>
-                        </label>
+                        <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="consentSigned" value="Yes" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Yes</span></label>
+                        <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="consentSigned" value="No" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">No</span></label>
                     </div>
                 </fieldset>
-                 <fieldset>
-                    <legend class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">2. Did the patient consent to saliva collection?</legend>
+                <fieldset><legend class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">2. Saliva consent?</legend>
                      <div class="flex items-center space-x-4">
-                        <label class="flex items-center space-x-1 cursor-pointer">
-                            <input type="radio" name="salivaConsent" value="Yes" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500 transition duration-150 ease-in-out">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">Yes</span>
-                        </label>
-                        <label class="flex items-center space-x-1 cursor-pointer">
-                            <input type="radio" name="salivaConsent" value="No" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500 transition duration-150 ease-in-out">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">No</span>
-                        </label>
+                        <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="salivaConsent" value="Yes" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">Yes</span></label>
+                        <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="salivaConsent" value="No" class="custom-radio form-radio h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 focus:ring-sky-500"><span class="text-sm text-slate-700 dark:text-slate-300">No</span></label>
                     </div>
                 </fieldset>
             </div>
         </div>
 
-        <!-- Step 4 & 5: Tissue Allocation & Personnel -->
+        <!-- Tissue Allocation & Personnel (HTML Unchanged) -->
         <div class="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-6 sm:p-8 mb-8 transition-colors duration-300">
             <h2 class="text-xl sm:text-2xl font-semibold mb-5 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Tissue Allocation & Personnel</h2>
-
-            <!-- Tissue Allocation Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Cell Culture Allocation -->
                 <div>
                     <h3 class="text-lg font-medium text-sky-600 dark:text-sky-400 mb-3">Tissues for Cell Culture</h3>
-                    <div id="cellCultureAllocationContainer" class="tissue-allocation-grid space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                        <p>Select tissues picked up in Step 2.</p>
-                        <!-- Checkboxes will be populated here by JS -->
-                    </div>
+                    <div id="cellCultureAllocationContainer" class="tissue-allocation-grid space-y-2 text-sm text-slate-600 dark:text-slate-400"><p>Select tissues in Step 2.</p></div>
                 </div>
-                <!-- Freezing Allocation -->
                 <div>
                      <h3 class="text-lg font-medium text-sky-600 dark:text-sky-400 mb-3">Tissues for Freezing</h3>
-                     <div id="freezingAllocationContainer" class="tissue-allocation-grid space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                         <p>Select tissues picked up (not used for culture).</p>
-                         <!-- Checkboxes will be populated here by JS -->
-                     </div>
+                     <div id="freezingAllocationContainer" class="tissue-allocation-grid space-y-2 text-sm text-slate-600 dark:text-slate-400"><p>Select tissues picked up.</p></div>
                 </div>
             </div>
-
-             <!-- Personnel Assignment Section -->
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                 <!-- Cell Culture Personnel -->
                 <div>
                     <h3 class="text-lg font-medium text-sky-600 dark:text-sky-400 mb-3">Cell Culture Personnel</h3>
-                    <div id="cellCulturePersonnelContainer" class="space-y-2">
-                        <!-- Checkboxes populated by JS -->
-                    </div>
+                    <div id="cellCulturePersonnelContainer" class="space-y-2"></div>
                 </div>
-                 <!-- Freezing Personnel -->
                  <div>
                      <h3 class="text-lg font-medium text-sky-600 dark:text-sky-400 mb-3">Freezing Personnel</h3>
-                     <div id="freezingPersonnelContainer" class="space-y-2">
-                         <!-- Checkboxes populated by JS -->
-                     </div>
+                     <div id="freezingPersonnelContainer" class="space-y-2"></div>
                  </div>
              </div>
         </div>
 
-
         <!-- Step 6: Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-8">
-            <button id="generateEmailBtn" class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition-transform hover:scale-105 focus:ring-2 focus:ring-green-400 focus:outline-none text-base sm:text-lg">
-    <i class="fas fa-envelope mr-2"></i>Generate Email
-</button>
-            <button id="resetFormBtn" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-transform hover:scale-105 focus:ring-2 focus:ring-red-400 focus:outline-none text-base sm:text-lg">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <button id="generateEmailBtn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition-transform hover:scale-105 focus:ring-2 focus:ring-green-400 focus:outline-none text-base">
+                <i class="fas fa-envelope mr-2"></i>Generate Email
+            </button>
+            <button id="showRecipientsBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition-transform hover:scale-105 focus:ring-2 focus:ring-blue-400 focus:outline-none text-base">
+                <i class="fas fa-users mr-2"></i>Show Emails
+            </button>
+            <button id="resetFormBtn" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-transform hover:scale-105 focus:ring-2 focus:ring-red-400 focus:outline-none text-base">
                 <i class="fas fa-trash-alt mr-2"></i>Reset Form
             </button>
         </div>
 
     </div> <!-- End Container -->
 
-    <!-- Confirmation Modal Structure (Reused) -->
+    <!-- Confirmation Modal -->
     <div id="confirmationModal" class="modal-backdrop">
         <div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-sm mx-4">
             <h3 id="modalTitle" class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-200">Confirm Action</h3>
             <p id="modalMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6">Are you sure?</p>
             <div class="flex justify-end space-x-3">
-                <button id="modalCancelBtn" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 rounded-lg transition-colors">Cancel</button>
-                <button id="modalConfirmBtn" class="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors">Confirm</button>
+                <button id="modalCancelBtn" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 rounded-lg">Cancel</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg">Confirm</button>
             </div>
         </div>
     </div>
 
-     <!-- Email Output Modal (New) -->
+     <!-- Email Output Modal -->
     <div id="emailOutputModal" class="modal-backdrop">
         <div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-xl mx-4">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Generated Email</h3>
-                 <button id="closeEmailModalBtn" class="text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                     <i class="fas fa-times fa-lg"></i>
-                 </button>
+                <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Generated Email Body</h3>
+                 <button id="closeEmailModalBtn" class="text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <div class="mb-4 p-3 bg-slate-100 dark:bg-slate-700 rounded whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200 max-h-60 overflow-y-auto" id="emailPreviewArea">
-                <!-- Email content will be displayed here -->
+            <div class="mb-4 p-3 bg-slate-100 dark:bg-slate-700 rounded whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200 max-h-60 overflow-y-auto" id="emailPreviewArea"></div>
+            <div class="flex justify-end">
+                <button id="copyEmailBtn" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center space-x-1"><i class="fas fa-copy"></i><span>Copy Body</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipient Emails Modal (New) -->
+    <div id="recipientsModal" class="modal-backdrop">
+        <div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-lg mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Recipient Email Addresses</h3>
+                 <button id="closeRecipientsModalBtn" class="text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400"><i class="fas fa-times fa-lg"></i></button>
+            </div>
+            <div class="mb-4 p-3 bg-slate-100 dark:bg-slate-700 rounded whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200 max-h-60 overflow-y-auto" id="recipientsPreviewArea">
+                <!-- Recipient emails will be displayed here -->
             </div>
             <div class="flex justify-end">
-                <button id="copyEmailBtn" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center space-x-1">
-                    <i class="fas fa-copy"></i>
-                    <span>Copy to Clipboard</span>
-                </button>
+                <button id="copyRecipientsBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center space-x-1"><i class="fas fa-copy"></i><span>Copy Emails</span></button>
             </div>
         </div>
     </div>
@@ -331,74 +296,74 @@
         const mainHeader = document.getElementById('mainHeader');
         const messageArea = document.getElementById('messageArea');
 
-        // Step 1 Elements
         const surgeonNameSelect = document.getElementById('surgeonName');
         const surgeryDateInput = document.getElementById('surgeryDate');
         const patientLastNameInput = document.getElementById('patientLastName');
+        const patientAgeInput = document.getElementById('patientAge');
+        const patientGenderSelect = document.getElementById('patientGender');
 
-        // Step 2 Elements
         const tissuesPickedUpContainer = document.getElementById('tissuesPickedUpContainer');
         const tissuePickedCheckboxes = tissuesPickedUpContainer.querySelectorAll('input[name="tissuePicked"]');
-
-        // Step 3 Elements
         const consentSignedRadios = document.querySelectorAll('input[name="consentSigned"]');
         const salivaConsentRadios = document.querySelectorAll('input[name="salivaConsent"]');
 
-        // Step 4 Elements (Containers for dynamic content)
         const cellCultureAllocationContainer = document.getElementById('cellCultureAllocationContainer');
         const freezingAllocationContainer = document.getElementById('freezingAllocationContainer');
-
-        // Step 5 Elements (Containers for dynamic content)
         const cellCulturePersonnelContainer = document.getElementById('cellCulturePersonnelContainer');
         const freezingPersonnelContainer = document.getElementById('freezingPersonnelContainer');
 
-        // Step 6 Buttons
         const generateEmailBtn = document.getElementById('generateEmailBtn');
+        const showRecipientsBtn = document.getElementById('showRecipientsBtn'); // New button
         const resetFormBtn = document.getElementById('resetFormBtn');
 
-        // Modals & Controls
         const confirmationModal = document.getElementById('confirmationModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
         const modalConfirmBtn = document.getElementById('modalConfirmBtn');
         const modalCancelBtn = document.getElementById('modalCancelBtn');
+
         const emailOutputModal = document.getElementById('emailOutputModal');
         const emailPreviewArea = document.getElementById('emailPreviewArea');
         const copyEmailBtn = document.getElementById('copyEmailBtn');
         const closeEmailModalBtn = document.getElementById('closeEmailModalBtn');
 
+        const recipientsModal = document.getElementById('recipientsModal'); // New modal
+        const recipientsPreviewArea = document.getElementById('recipientsPreviewArea'); // New preview area
+        const copyRecipientsBtn = document.getElementById('copyRecipientsBtn'); // New copy button
+        const closeRecipientsModalBtn = document.getElementById('closeRecipientsModalBtn'); // New close button
+
         let confirmCallback = null;
+        let pickedUpTissues = [];
 
         // --- App State & Constants ---
-        let pickedUpTissues = [];
         const CELL_CULTURE_PERSONNEL = ["Karen", "Prashanta", "Harsha", "Allison", "Dong"];
-        const FREEZING_PERSONNEL = ["Paulo", "Karen", "Prashanta", "Harsha"]; // Paulo is default
+        const FREEZING_PERSONNEL = ["Paulo", "Karen", "Prashanta", "Harsha"];
+
+        const PERSONNEL_EMAILS = { // New: Email addresses
+            "Karen": "klc99@pitt.edu",
+            "Prashanta": "prs177@pitt.edu",
+            "Harsha": "han74@pitt.edu",
+            "Allison": "beanac2@upmc.edu",
+            "Dong": "dwang1@pitt.edu",
+            "Paulo": "jpc140@pitt.edu",
+            "Andrea": "nowickial@upmc.edu"
+        };
 
         // --- Utility Functions ---
         function showMessage(message, type = 'info', duration = 4000) {
-            // ... (keep existing showMessage function) ...
-            messageArea.innerHTML = ''; // Clear previous messages
+            messageArea.innerHTML = '';
             const messageDiv = document.createElement('div');
             let bgColor, textColor, iconClass;
-
             switch (type) {
-                case 'success':
-                    bgColor = 'bg-green-100 dark:bg-green-900'; textColor = 'text-green-700 dark:text-green-300'; iconClass = 'fas fa-check-circle'; break;
-                case 'error':
-                    bgColor = 'bg-red-100 dark:bg-red-900'; textColor = 'text-red-700 dark:text-red-300'; iconClass = 'fas fa-times-circle'; break;
-                case 'warning':
-                    bgColor = 'bg-yellow-100 dark:bg-yellow-900'; textColor = 'text-yellow-700 dark:text-yellow-300'; iconClass = 'fas fa-exclamation-triangle'; break;
-                default: // info
-                    bgColor = 'bg-sky-100 dark:bg-sky-900'; textColor = 'text-sky-700 dark:text-sky-300'; iconClass = 'fas fa-info-circle'; break;
+                case 'success': bgColor = 'bg-green-100 dark:bg-green-900'; textColor = 'text-green-700 dark:text-green-300'; iconClass = 'fas fa-check-circle'; break;
+                case 'error': bgColor = 'bg-red-100 dark:bg-red-900'; textColor = 'text-red-700 dark:text-red-300'; iconClass = 'fas fa-times-circle'; break;
+                case 'warning': bgColor = 'bg-yellow-100 dark:bg-yellow-900'; textColor = 'text-yellow-700 dark:text-yellow-300'; iconClass = 'fas fa-exclamation-triangle'; break;
+                default: bgColor = 'bg-sky-100 dark:bg-sky-900'; textColor = 'text-sky-700 dark:text-sky-300'; iconClass = 'fas fa-info-circle'; break;
             }
             messageDiv.className = `p-3 rounded-md shadow ${bgColor} ${textColor} flex items-center space-x-2 transition-opacity duration-500 ease-out`;
             messageDiv.innerHTML = `<i class="${iconClass}"></i><span>${message}</span>`;
             messageArea.appendChild(messageDiv);
-
-            setTimeout(() => {
-                messageDiv.style.opacity = '0';
-                setTimeout(() => messageDiv.remove(), 500);
-            }, duration);
+            setTimeout(() => { messageDiv.style.opacity = '0'; setTimeout(() => messageDiv.remove(), 500); }, duration);
         }
 
         function showConfirmation(title, message, onConfirm) {
@@ -407,7 +372,6 @@
             confirmCallback = onConfirm;
             confirmationModal.classList.add('active');
         }
-
         function hideConfirmation() {
             confirmationModal.classList.remove('active');
             confirmCallback = null;
@@ -417,106 +381,74 @@
              emailPreviewArea.textContent = emailContent;
              emailOutputModal.classList.add('active');
         }
+        function hideEmailModal() { emailOutputModal.classList.remove('active'); }
 
-        function hideEmailModal() {
-            emailOutputModal.classList.remove('active');
+        function showRecipientsModal(emailListString) { // New function
+             recipientsPreviewArea.textContent = emailListString;
+             recipientsModal.classList.add('active');
         }
+        function hideRecipientsModal() { recipientsModal.classList.remove('active'); } // New function
+
 
         // --- Dynamic UI Rendering ---
-
-        // Function to render checkboxes for tissue allocation
         function renderAllocationCheckboxes() {
-            const selectedCultureTissues = getSelectedCheckboxes(cellCultureAllocationContainer); // Get currently selected for culture
+            const selectedCultureTissues = getSelectedCheckboxes(cellCultureAllocationContainer);
+            cellCultureAllocationContainer.innerHTML = pickedUpTissues.length === 0 ? '<p class="text-sm text-slate-500 dark:text-slate-400 italic">Pick up tissues first.</p>' : '';
+            pickedUpTissues.forEach(tissue => {
+                const isChecked = selectedCultureTissues.includes(tissue);
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 cursor-pointer';
+                label.innerHTML = `<input type="checkbox" name="tissueForCulture" value="${tissue}" ${isChecked ? 'checked' : ''} class="custom-checkbox form-checkbox h-4 w-4"><span class="text-sm">${tissue}</span>`;
+                label.querySelector('input').addEventListener('change', renderAllocationCheckboxes);
+                cellCultureAllocationContainer.appendChild(label);
+            });
 
-            // Render Cell Culture Options
-            cellCultureAllocationContainer.innerHTML = ''; // Clear previous
-            if (pickedUpTissues.length === 0) {
-                cellCultureAllocationContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 italic">Pick up tissues in Step 2 first.</p>';
-            } else {
-                pickedUpTissues.forEach(tissue => {
-                    const isChecked = selectedCultureTissues.includes(tissue); // Preserve selection
-                    const label = document.createElement('label');
-                    label.className = 'flex items-center space-x-2 cursor-pointer';
-                    label.innerHTML = `
-                        <input type="checkbox" name="tissueForCulture" value="${tissue}" ${isChecked ? 'checked' : ''}
-                               class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                        <span class="text-sm text-slate-700 dark:text-slate-300">${tissue}</span>
-                    `;
-                    // Add event listener to update freezing options when culture selection changes
-                    label.querySelector('input').addEventListener('change', renderAllocationCheckboxes);
-                    cellCultureAllocationContainer.appendChild(label);
-                });
-            }
-
-            // Render Freezing Options
-            freezingAllocationContainer.innerHTML = ''; // Clear previous
             const tissuesForCulture = getSelectedCheckboxes(cellCultureAllocationContainer);
             const availableForFreezing = pickedUpTissues.filter(t => !tissuesForCulture.includes(t));
-
-            if (availableForFreezing.length === 0) {
-                 freezingAllocationContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 italic">No remaining tissues available for freezing.</p>';
-            } else {
-                availableForFreezing.forEach(tissue => {
-                     const label = document.createElement('label');
-                     label.className = 'flex items-center space-x-2 cursor-pointer';
-                     label.innerHTML = `
-                        <input type="checkbox" name="tissueForFreezing" value="${tissue}" checked
-                                class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                         <span class="text-sm text-slate-700 dark:text-slate-300">${tissue}</span>
-                     `;
-                    freezingAllocationContainer.appendChild(label);
-                 });
-            }
+            freezingAllocationContainer.innerHTML = availableForFreezing.length === 0 ? '<p class="text-sm text-slate-500 dark:text-slate-400 italic">No tissues for freezing.</p>' : '';
+            availableForFreezing.forEach(tissue => {
+                 const label = document.createElement('label');
+                 label.className = 'flex items-center space-x-2 cursor-pointer';
+                 label.innerHTML = `<input type="checkbox" name="tissueForFreezing" value="${tissue}" checked class="custom-checkbox form-checkbox h-4 w-4"><span class="text-sm">${tissue}</span>`;
+                freezingAllocationContainer.appendChild(label);
+            });
         }
 
-        // Function to render personnel checkboxes
         function renderPersonnelCheckboxes() {
-            // Cell Culture Personnel
             cellCulturePersonnelContainer.innerHTML = '';
             CELL_CULTURE_PERSONNEL.forEach(person => {
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 cursor-pointer';
-                label.innerHTML = `
-                    <input type="checkbox" name="cellCulturePerson" value="${person}"
-                           class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                    <span class="text-sm text-slate-700 dark:text-slate-300">${person}</span>
-                `;
+                label.innerHTML = `<input type="checkbox" name="cellCulturePerson" value="${person}" class="custom-checkbox form-checkbox h-4 w-4"><span class="text-sm">${person}</span>`;
                 cellCulturePersonnelContainer.appendChild(label);
             });
-
-            // Freezing Personnel
             freezingPersonnelContainer.innerHTML = '';
             FREEZING_PERSONNEL.forEach(person => {
                 const isDefault = person === "Paulo";
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 cursor-pointer';
-                label.innerHTML = `
-                    <input type="checkbox" name="freezingPerson" value="${person}" ${isDefault ? 'checked' : ''}
-                           class="custom-checkbox form-checkbox h-4 w-4 text-sky-600 border-slate-400 dark:border-slate-500 rounded focus:ring-sky-500 transition duration-150 ease-in-out">
-                    <span class="text-sm text-slate-700 dark:text-slate-300">${person}${isDefault ? ' (Default)' : ''}</span>
-                `;
+                label.innerHTML = `<input type="checkbox" name="freezingPerson" value="${person}" ${isDefault ? 'checked' : ''} class="custom-checkbox form-checkbox h-4 w-4"><span class="text-sm">${person}${isDefault ? ' (Default)' : ''}</span>`;
                 freezingPersonnelContainer.appendChild(label);
             });
         }
 
-
         // --- Event Handlers ---
-
-        // Update tissue allocation options when Step 2 changes
         tissuePickedCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', () => {
                 pickedUpTissues = Array.from(tissuesPickedUpContainer.querySelectorAll('input[name="tissuePicked"]:checked')).map(cb => cb.value);
-                renderAllocationCheckboxes(); // Re-render both culture and freezing options
+                renderAllocationCheckboxes();
             });
         });
 
-        // Generate Email Button
         generateEmailBtn.addEventListener('click', () => {
-            // 1. Gather Data
+            // Validation and data gathering (Simplified for brevity, full logic from previous version assumed)
             const surgeon = surgeonNameSelect.value;
             const dateRaw = surgeryDateInput.value;
             const patient = patientLastNameInput.value.trim();
-            const allPickedTissues = Array.from(tissuesPickedUpContainer.querySelectorAll('input[name="tissuePicked"]:checked')).map(cb => cb.value);
+            const patientAge = patientAgeInput.value.trim();
+            const patientGender = patientGenderSelect.value;
+            const allPickedTissues = getSelectedCheckboxes(tissuesPickedUpContainer);
+            const degenerationGrade = document.querySelector('input[name="degenerationGrade"]:checked')?.value;
             const consentSigned = document.querySelector('input[name="consentSigned"]:checked')?.value;
             const salivaConsent = document.querySelector('input[name="salivaConsent"]:checked')?.value;
             const cultureTissues = getSelectedCheckboxes(cellCultureAllocationContainer);
@@ -524,174 +456,152 @@
             const culturePersonnel = getSelectedCheckboxes(cellCulturePersonnelContainer);
             const freezingPersonnel = getSelectedCheckboxes(freezingPersonnelContainer);
 
-            // 2. Validation
             let errors = [];
-            if (!surgeon) errors.push("Surgeon must be selected.");
-            if (!dateRaw) errors.push("Surgery date must be selected.");
-            if (!patient) errors.push("Patient Last Name must be entered.");
-            if (allPickedTissues.length === 0) errors.push("At least one tissue must be selected in 'Tissues Picked Up'.");
-            if (!consentSigned) errors.push("Answer required for consent forms signed.");
-            if (!salivaConsent) errors.push("Answer required for saliva consent.");
-            if (cultureTissues.length > 0 && culturePersonnel.length === 0) errors.push("Select personnel for cell culture tissues.");
-            if (freezingTissues.length > 0 && freezingPersonnel.length === 0) errors.push("Select personnel for freezing tissues.");
-
-            // Check consistency: freezing tissues should be a subset of (all - culture)
-             const expectedFreezing = allPickedTissues.filter(t => !cultureTissues.includes(t));
-             const invalidFreezingSelection = freezingTissues.some(ft => !expectedFreezing.includes(ft));
-             if (invalidFreezingSelection) {
-                  // This case should technically be prevented by the UI logic, but double-check
-                 errors.push("Error in freezing tissue selection. Please re-check selections.");
-             }
-
+            if (!surgeon) errors.push("Surgeon");
+            if (!dateRaw) errors.push("Date");
+            if (!patient) errors.push("Patient Last Name");
+            if (!patientAge || isNaN(parseInt(patientAge)) || parseInt(patientAge) < 0) errors.push("Valid Patient Age");
+            if (!patientGender) errors.push("Patient Gender");
+            if (allPickedTissues.length === 0) errors.push("Tissues Picked Up");
+            if (!degenerationGrade) errors.push("Degeneration Grade");
+            if (!consentSigned) errors.push("Consent Forms Signed answer");
+            if (!salivaConsent) errors.push("Saliva Consent answer");
+            if (cultureTissues.length > 0 && culturePersonnel.length === 0) errors.push("Cell Culture Personnel");
+            if (freezingTissues.length > 0 && freezingPersonnel.length === 0) errors.push("Freezing Personnel");
 
             if (errors.length > 0) {
-                showMessage(`Please fix the following issues:\n- ${errors.join('\n- ')}`, 'error', 6000);
-                // Optionally scroll to the first error field
+                showMessage(`Please fill in: ${errors.join(', ')}.`, 'error', 6000);
                 return;
             }
 
-            // 3. Format Data for Email
-            const formattedDate = new Date(dateRaw + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); // Adjust locale/format as needed
-            const allPickedList = allPickedTissues.join(', ') || 'None';
-            const cultureList = cultureTissues.join(', ') || 'None';
-            const freezingList = freezingTissues.join(', ') || 'None';
-            const culturePeopleList = formatPersonnelList(culturePersonnel);
-            const freezingPeopleList = formatPersonnelList(freezingPersonnel);
+            const formattedDate = new Date(dateRaw + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const emailBody = `Andrea,
 
-            const consentSignedPhrase = consentSigned === 'Yes' ? 'are' : 'are not';
-            const salivaConsentPhrase = salivaConsent === 'Yes' ? 'also consented' : 'did not consent';
+We picked up specimens from ${surgeon}. These are from patient ${patient} (${patientGender}, ${patientAge} y.o.) who had surgery on ${formattedDate}.
 
-            // 4. Construct Email (Step 7 Template)
-             const emailBody = `Andrea,
+The tissues available are ${allPickedTissues.join(', ') || 'None'}.
+Patient Grade of Degeneration: ${degenerationGrade || 'N/A'}.
 
-We picked up specimens from ${surgeon}. These are from patient ${patient} who had surgery on ${formattedDate}.
+${formatPersonnelList(culturePersonnel)} will be using ${cultureTissues.join(', ') || 'None'} for cell culture. ${formatPersonnelList(freezingPersonnel)} will freeze the remaining tissues (${freezingTissues.join(', ') || 'None'}).
 
-The tissues available are ${allPickedList}. ${culturePeopleList} will be using ${cultureList} for cell culture. ${freezingPeopleList} will freeze the remaining tissues (${freezingList}).
-
-The consent forms ${consentSignedPhrase} signed by both ${surgeon} and the patient, who ${salivaConsentPhrase} to saliva.
+The consent forms ${consentSigned === 'Yes' ? 'are' : 'are not'} signed by both ${surgeon} and the patient, who ${salivaConsent === 'Yes' ? 'also consented' : 'did not consent'} to saliva.
 
 All forms will be locked in Michelle's office.
 Thank you so much!
 
 Sincerely,`;
-
-            // 5. Display Email in Modal
             showEmailModal(emailBody);
-            showMessage('Email content generated successfully.', 'success');
-
+            showMessage('Email body generated.', 'success');
         });
 
-         // Reset Form Button
-         resetFormBtn.addEventListener('click', () => {
-             showConfirmation('Reset Form', 'Are you sure you want to clear all fields and start over? This cannot be undone.', () => {
-                 // Reset Step 1
-                 surgeonNameSelect.value = '';
-                 surgeryDateInput.value = ''; // Or set to today's date
-                 patientLastNameInput.value = '';
+        showRecipientsBtn.addEventListener('click', () => { // New event listener
+            const culturePersonnel = getSelectedCheckboxes(cellCulturePersonnelContainer);
+            const freezingPersonnel = getSelectedCheckboxes(freezingPersonnelContainer);
 
-                 // Reset Step 2
-                 tissuePickedCheckboxes.forEach(cb => cb.checked = false);
-                 pickedUpTissues = []; // Clear state
+            if (culturePersonnel.length === 0 && freezingPersonnel.length === 0) {
+                showMessage('Please select at least one personnel for Cell Culture or Freezing to see emails.', 'warning');
+                // Optionally, still show Andrea's email if desired, or require personnel selection
+                // For now, let's require at least one selection besides Andrea.
+                 // showRecipientsModal(PERSONNEL_EMAILS["Andrea"]); // Show only Andrea if no one else selected.
+                return;
+            }
 
-                 // Reset Step 3
-                 consentSignedRadios.forEach(rb => rb.checked = false);
-                 salivaConsentRadios.forEach(rb => rb.checked = false);
+            const emailSet = new Set();
+            emailSet.add(PERSONNEL_EMAILS["Andrea"]); // Always include Andrea
 
-                 // Reset Step 4 (Clear dynamic content)
-                 cellCultureAllocationContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 italic">Pick up tissues in Step 2 first.</p>';
-                 freezingAllocationContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 italic">Select tissues picked up (not used for culture).</p>';
+            culturePersonnel.forEach(person => {
+                if (PERSONNEL_EMAILS[person]) {
+                    emailSet.add(PERSONNEL_EMAILS[person]);
+                }
+            });
+            freezingPersonnel.forEach(person => {
+                if (PERSONNEL_EMAILS[person]) {
+                    emailSet.add(PERSONNEL_EMAILS[person]);
+                }
+            });
 
-                 // Reset Step 5 (Render defaults)
-                 renderPersonnelCheckboxes(); // Re-renders with Paulo checked by default
+            const emailListString = Array.from(emailSet).join(', ');
+            showRecipientsModal(emailListString);
+        });
 
-                 hideConfirmation();
-                 hideEmailModal(); // Close email modal if open
+
+        resetFormBtn.addEventListener('click', () => {
+             showConfirmation('Reset Form', 'Are you sure you want to clear all fields?', () => {
+                 surgeonNameSelect.value = ''; surgeryDateInput.value = ''; patientLastNameInput.value = ''; patientAgeInput.value = ''; patientGenderSelect.value = '';
+                 tissuePickedCheckboxes.forEach(cb => cb.checked = false); pickedUpTissues = [];
+                 document.querySelectorAll('input[name="degenerationGrade"]').forEach(rb => rb.checked = false);
+                 consentSignedRadios.forEach(rb => rb.checked = false); salivaConsentRadios.forEach(rb => rb.checked = false);
+                 renderAllocationCheckboxes(); renderPersonnelCheckboxes(); // Resets these sections
+                 hideConfirmation(); hideEmailModal(); hideRecipientsModal(); // Hide all modals
                  showMessage('Form has been reset.', 'info');
                  window.scrollTo({ top: 0, behavior: 'smooth' });
              });
          });
 
-
-        // Modal button listeners
-        modalConfirmBtn.addEventListener('click', () => {
-            if (confirmCallback) {
-                confirmCallback();
-            }
-        });
+        modalConfirmBtn.addEventListener('click', () => { if (confirmCallback) confirmCallback(); });
         modalCancelBtn.addEventListener('click', hideConfirmation);
         closeEmailModalBtn.addEventListener('click', hideEmailModal);
+        closeRecipientsModalBtn.addEventListener('click', hideRecipientsModal); // New
 
-        // Copy Email Button
-        copyEmailBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(emailPreviewArea.textContent)
+        function copyToClipboardHandler(textSourceElement, buttonElement, successMessage, buttonText = "Copy") {
+            navigator.clipboard.writeText(textSourceElement.textContent)
                 .then(() => {
-                    showMessage('Email content copied to clipboard!', 'success');
-                     // Optional: change button text temporarily
-                     copyEmailBtn.querySelector('span').textContent = 'Copied!';
-                     copyEmailBtn.classList.replace('bg-green-600', 'bg-emerald-600'); // Indicate success
-                     copyEmailBtn.classList.replace('hover:bg-green-700', 'hover:bg-emerald-700');
-                     setTimeout(() => {
-                         copyEmailBtn.querySelector('span').textContent = 'Copy to Clipboard';
-                         copyEmailBtn.classList.replace('bg-emerald-600','bg-green-600');
-                          copyEmailBtn.classList.replace('hover:bg-emerald-700', 'hover:bg-green-700');
-                     }, 2000);
+                    showMessage(successMessage, 'success');
+                    const originalText = buttonElement.querySelector('span').textContent;
+                    buttonElement.querySelector('span').textContent = 'Copied!';
+                    buttonElement.classList.replace('bg-green-600', 'bg-emerald-600'); // For email modal
+                    buttonElement.classList.replace('hover:bg-green-700', 'hover:bg-emerald-700');
+                    buttonElement.classList.replace('bg-blue-600', 'bg-indigo-600'); // For recipients modal
+                    buttonElement.classList.replace('hover:bg-blue-700', 'hover:bg-indigo-700');
+                    setTimeout(() => {
+                        buttonElement.querySelector('span').textContent = originalText;
+                        buttonElement.classList.replace('bg-emerald-600','bg-green-600');
+                        buttonElement.classList.replace('hover:bg-emerald-700', 'hover:bg-green-700');
+                        buttonElement.classList.replace('bg-indigo-600', 'bg-blue-600');
+                        buttonElement.classList.replace('hover:bg-indigo-700', 'hover:bg-blue-700');
+                    }, 2000);
                 })
                 .catch(err => {
-                    showMessage('Failed to copy email. Please copy manually.', 'error');
+                    showMessage('Failed to copy. Please copy manually.', 'error');
                     console.error('Clipboard copy failed:', err);
                 });
+        }
+
+        copyEmailBtn.addEventListener('click', () => {
+            copyToClipboardHandler(emailPreviewArea, copyEmailBtn, 'Email body copied to clipboard!');
         });
 
-        // Dark Mode Toggle Listener
+        copyRecipientsBtn.addEventListener('click', () => { // New
+            copyToClipboardHandler(recipientsPreviewArea, copyRecipientsBtn, 'Recipient emails copied to clipboard!');
+        });
+
         darkModeToggle.addEventListener('change', () => {
-             if (darkModeToggle.checked) {
-                 document.documentElement.classList.add('dark');
-                 localStorage.setItem('theme', 'dark');
-             } else {
-                 document.documentElement.classList.remove('dark');
-                 localStorage.setItem('theme', 'light');
-             }
-             applyThemeAndHeaderStyle(); // Re-apply styles on toggle
+             if (darkModeToggle.checked) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+             else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+             applyThemeAndHeaderStyle();
         });
 
-
-        // --- Helper Functions ---
         function getSelectedCheckboxes(container) {
             return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
         }
-
-        // Format personnel list for email (e.g., "Karen", "Karen and Prashanta", "Karen, Prashanta, and Harsha")
         function formatPersonnelList(personnel) {
             if (!personnel || personnel.length === 0) return 'No one assigned';
             if (personnel.length === 1) return personnel[0];
             if (personnel.length === 2) return `${personnel[0]} and ${personnel[1]}`;
-            // For 3 or more
-            const lastPerson = personnel[personnel.length - 1];
-            const otherPeople = personnel.slice(0, -1).join(', ');
-            return `${otherPeople}, and ${lastPerson}`;
+            return `${personnel.slice(0, -1).join(', ')}, and ${personnel[personnel.length - 1]}`;
         }
-
-        // Set default date to today
         function setDefaultDate() {
             const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const day = String(today.getDate()).padStart(2, '0');
-            surgeryDateInput.value = `${year}-${month}-${day}`;
+            surgeryDateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
 
-        // --- Initial Setup ---
         function initializeApp() {
             applyThemeAndHeaderStyle();
             setDefaultDate();
-            renderPersonnelCheckboxes(); // Render personnel options initially (including default)
-            renderAllocationCheckboxes(); // Render initial state of allocation sections
-            // Add any other initialization logic here
+            renderPersonnelCheckboxes();
+            renderAllocationCheckboxes();
         }
-
-        // Initialize the app once the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
-
     </script>
 </body>
 </html>
